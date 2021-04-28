@@ -16,6 +16,8 @@ import java.util.concurrent.ConcurrentMap;
 @Data
 public class ClientStackTracer {
 
+    private Class[] loadedClasses;
+
     private RequestEntry controllerEntry;
     /**
      * key -> the simple class name of controller
@@ -26,8 +28,9 @@ public class ClientStackTracer {
 
     private static volatile ClientStackTracer INSTANCE = null;
 
-    public static void initial(RequestEntry controllerEntry) {
+    public static void initial(RequestEntry controllerEntry, Class[] loadedClasses) {
         getInstance().controllerEntry = controllerEntry;
+        getInstance().loadedClasses = loadedClasses;
     }
 
     public static ClientStackTracer getInstance() {
@@ -59,5 +62,9 @@ public class ClientStackTracer {
 
     public static boolean isEmpty() {
         return getInstance().isEmpty;
+    }
+
+    public RequestEntry getTopController() {
+        return INSTANCE.controllerEntry;
     }
 }

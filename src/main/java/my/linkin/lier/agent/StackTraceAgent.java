@@ -1,6 +1,14 @@
 package my.linkin.lier.agent;
 
 import my.linkin.lier.*;
+import my.linkin.lier.interceptor.StackTraceInterceptor;
+import net.bytebuddy.agent.builder.AgentBuilder;
+import net.bytebuddy.description.method.MethodDescription;
+import net.bytebuddy.description.type.TypeDescription;
+import net.bytebuddy.dynamic.DynamicType;
+import net.bytebuddy.implementation.MethodDelegation;
+import net.bytebuddy.matcher.ElementMatchers;
+import net.bytebuddy.utility.JavaModule;
 import org.springframework.web.bind.annotation.*;
 
 import java.lang.instrument.Instrumentation;
@@ -25,6 +33,50 @@ public class StackTraceAgent {
                 inst.retransformClasses(c);
             }
         }
+
+        AgentBuilder.Transformer transformer = new AgentBuilder.Transformer() {
+            @Override
+            public DynamicType.Builder<?> transform(DynamicType.Builder<?> builder,
+                                                    TypeDescription typeDescription,
+                                                    ClassLoader classLoader,
+                                                    JavaModule javaModule) {
+                return builder.method(ElementMatchers.<MethodDescription>any())
+                        .intercept(MethodDelegation.to(StackTraceInterceptor.class));
+            }
+        };
+
+        new AgentBuilder.Default()
+                .type(ElementMatchers.nameContains("client"))
+                .transform(transformer)
+                .with(new AgentBuilder.Listener() {
+
+                    @Override
+                    public void onDiscovery(String s, ClassLoader classLoader, JavaModule javaModule, boolean b) {
+                        
+                    }
+
+                    @Override
+                    public void onTransformation(TypeDescription typeDescription, ClassLoader classLoader, JavaModule javaModule, boolean b, DynamicType dynamicType) {
+
+                    }
+
+                    @Override
+                    public void onIgnored(TypeDescription typeDescription, ClassLoader classLoader, JavaModule javaModule, boolean b) {
+
+                    }
+
+                    @Override
+                    public void onError(String s, ClassLoader classLoader, JavaModule javaModule, boolean b, Throwable throwable) {
+
+                    }
+
+                    @Override
+                    public void onComplete(String s, ClassLoader classLoader, JavaModule javaModule, boolean b) {
+
+                    }
+                })
+                .installOn(inst);
+
     }
 
 
