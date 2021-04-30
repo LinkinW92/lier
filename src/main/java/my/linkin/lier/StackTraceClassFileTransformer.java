@@ -6,7 +6,7 @@ import java.security.ProtectionDomain;
 
 /**
  * Transform a client to trace the call stack from controller to current client itself.
- * {@link ClientStackTracer#trace(String, RequestEntry)}
+ * {@link StackTraceContext#trace(String, RequestEntry)}
  *
  * @author linkin
  */

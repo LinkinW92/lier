@@ -5,6 +5,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.lang.reflect.Method;
+import java.util.StringJoiner;
 
 /**
  * A request entry corresponding to a controller in a web service.
@@ -17,6 +18,11 @@ import java.lang.reflect.Method;
 @AllArgsConstructor
 @NoArgsConstructor
 public class RequestEntry {
+    private static final StringJoiner joiner = new StringJoiner("#");
     private Class<?> clz;
     private Method method;
+
+    public String getIdentifier() {
+        return joiner.add(clz.getCanonicalName()).add(method.getName()).toString();
+    }
 }

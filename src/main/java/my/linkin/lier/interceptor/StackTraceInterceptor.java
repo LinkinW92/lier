@@ -1,7 +1,8 @@
 package my.linkin.lier.interceptor;
 
-import my.linkin.lier.ClientStackTracer;
+import lombok.extern.slf4j.Slf4j;
 import my.linkin.lier.RequestEntry;
+import my.linkin.lier.StackTraceContext;
 import net.bytebuddy.implementation.bind.annotation.Origin;
 import net.bytebuddy.implementation.bind.annotation.RuntimeType;
 import net.bytebuddy.implementation.bind.annotation.SuperCall;
@@ -18,15 +19,17 @@ import java.util.concurrent.Callable;
  *
  * @author linkin
  */
+@Slf4j
 public class StackTraceInterceptor {
-    private static final Logger log = LoggerFactory.getLogger(StackTraceInterceptor.class);
 
     private static final int MIN_STACK_SIZE = 3;
 
     @RuntimeType
+    @SuppressWarnings("unused")
     public static Object intercept(@Origin Method method, @SuperCall Callable<?> callable) throws Exception {
+        log.info("Trigger intercept..., method:{}", method.getName());
         try {
-            RequestEntry controllerEntry = ClientStackTracer.getInstance().getControllerEntry();
+            RequestEntry controllerEntry = StackTraceContext.getInstance().getControllerEntry();
             StackTraceElement[] elements = Thread.currentThread().getStackTrace();
             if (null == elements || elements.length < MIN_STACK_SIZE) {
                 log.warn("Unsatisfied stack trace...");
@@ -38,19 +41,19 @@ public class StackTraceInterceptor {
                         break;
                     }
                 }
-                // from maybe null if the request entry is not from a controller
+                // `from` maybe null if the request entry is not from a controller
                 // Here, we should make sure all third clients are in the same package and everyone
                 // has unique full outfitted name
                 if (null != from) {
                     Class<?> candidate = null;
-                    for (Class clz : ClientStackTracer.getInstance().getLoadedClasses()) {
+                    for (Class clz : StackTraceContext.getInstance().getLoadedClasses()) {
                         if (clz.getSimpleName().equals(end.getClassName())) {
                             candidate = clz;
                             break;
                         }
                     }
                     if (null != candidate) {
-                        ClientStackTracer.trace(from.getClassName(), new RequestEntry(candidate, method));
+                        StackTraceContext.trace(new RequestEntry(candidate, method));
                     }
                 }
             }
